@@ -148,6 +148,7 @@ def class_menu():
 				print(f"---CLASS REPORT---\n")
 				for key, value in class_report(student_data).items():
 					print(f"{key}: {value}")
+				print(write_report("report.txt", student_data))
 
 			case "2":
 				print("In development")
@@ -168,6 +169,4 @@ def class_menu():
 				print("invalid choice.")
 
 
-# class_menu()
-students=read_students("students.txt")
-write_report("report.txt", students)
+class_menu()
