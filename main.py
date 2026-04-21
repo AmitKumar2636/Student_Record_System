@@ -163,7 +163,7 @@ def honour_roll(students):
 	passing=passing_students(students)
 	average=average_marks(students)
 	honour_roll=[]
-	for student in students:
+	for student in passing:
 		if student["marks"] > average:
 			name=student["name"].strip().capitalize()
 			honour_roll.append(name)
@@ -181,15 +181,17 @@ def log_honour_roll(filename, students):
 
 def row_average(matrix):
 	AverageList=[]
-	for student in marks_matrix:
-		score=total_marks(student)
-		average=score/len(student)
-		AverageList.append(round(average,1))
+	for student in matrix:
+		total=0
+		for score in student:
+			total+=score
+		average=round(total/len(student),1)
+		AverageList.append(average)
 	return AverageList
 
 def enforce_pass_threshold(matrix, threshold):
 	averagelist=row_average(matrix)
-	for average, index in enumerate(averagelist, start=1):
+	for index, average in enumerate(averagelist, start=1):
 		if average < threshold:
 			return f"Row {index} below threshold — stopping."
 	else:
