@@ -2,10 +2,11 @@ import os
 class_a = ['Amit', 'anisha ', 'KAVYA', 'pratham']
 class_b = [' Pooja', 'Varsha', 'kavya', 'Rahul']
 full_roll = {'Amit', ' Anisha ', 'KAVYA', 'Pratham', 'Pooja', 'Varsha', 'Shubham', 'Virat', 'Shiva'}
+marks_matrix = [[88, 95, 52], [73, 61, 91], [67, 84, 78]]
 
 
 def read_students(file_name):
-	student_data=[]
+	students=[]
 
 	try:
 		with open(file_name, "r") as f:
@@ -19,11 +20,11 @@ def read_students(file_name):
 				data["name"]=str(parts[0]).strip().title()
 				data["marks"]=int(parts[1])
 				data["grade"]=str(parts[2]).strip().upper()
-				student_data.append(data)
+				students.append(data)
 
 	except FileNotFoundError:
 		print("students.txt not found")
-	return student_data
+	return students
 
 # Part 3 — Score Analysis
 def total_marks(students):
@@ -144,17 +145,64 @@ def compare_classes(list_a, list_b):
 	return shared_students(list(clean_a), list(clean_b))
 
 def find_absent_students(present, full_roll):
-
 	result = compare_classes(full_roll, present)
+	absent=result["only_in_a"]
+	line=", ".join(absent)
+	return f"absent students: {line}"
 
-	return result["only_in_a"]
+# Part 6 — Honour Roll and Logging
+def passing_students(students):
+	passing=[]
+	for student in students:
+		if student["grade"]=="F":
+			continue
+		passing.append(student)
+	return passing
+
+def honour_roll(students):
+	passing=passing_students(students)
+	average=average_marks(students)
+	honour_roll=[]
+	for student in passing:
+		if student["marks"] > average:
+			name=student["name"].strip().capitalize()
+			honour_roll.append(name)
+	return honour_roll
+
+def log_honour_roll(filename, students):
+	studentlist=honour_roll(students)
+	line= ", ".join(studentlist)
+	try:
+		with open(filename, "a") as f:
+			f.write(line+"\n")
+		return "log updated"
+	except OSError as e:
+		return "error: log not updated. {e}"
+
+def row_average(matrix):
+	AverageList=[]
+	for student in matrix:
+		total=0
+		for score in student:
+			total+=score
+		average=round(total/len(student),1)
+		AverageList.append(average)
+	return AverageList
+
+def enforce_pass_threshold(matrix, threshold):
+	averagelist=row_average(matrix)
+	for index, average in enumerate(averagelist, start=1):
+		if average < threshold:
+			return f"Row {index} below threshold — stopping."
+	else:
+		return "All rows meet threshold."
 
 # Part 1 — The Interactive Menu
 def class_menu():
-	student_data=read_students("students.txt")
+	students=read_students("students.txt")
 	while True:
 		print("--Main Menu--")
-		print(f"{len(student_data)} records were loaded")
+		print(f"{len(students)} records were loaded")
 		print("1. Write class report")
 		print("2. Log honour roll")
 		print("3. Compare classes / find absent students")
@@ -166,15 +214,24 @@ def class_menu():
 		choice=input("Enter your choice: ")
 		match choice:
 			case "1":
-				print(f"---CLASS REPORT---\n")
-				for key, value in class_report(student_data).items():
+
+				print(f"---CLASS REPORT---")
+				for key, value in class_report(students).items():
 					print(f"{key}: {value}")
-				print(write_report("report.txt", student_data))
+
+				print(f"---GRADE SHEET---")
+				for key, value in count_by_grade(students).items():
+					print(f"{key}: {value}")
+
+				print(f"---TOP GRADE---")
+				print(top_grade(students)+"\n")
+
+				print(write_report("report.txt", students))
 
 			case "2":
-				print("In development")
+				print(log_honour_roll("report.txt", students))
 			case "3":
-				data=input("Enter names (comma seperated): ")
+				data=input("Enter names (comma separated): ")
 				present=data.split(",")
 				print(find_absent_students(set(present), full_roll))
 
@@ -187,6 +244,8 @@ def class_menu():
 			case "7":
 				print("In development")
 			case "0":
+				print(enforce_pass_threshold(marks_matrix, 76.5))
+				input("Press enter to continue")
 				print("exiting program")
 				break
 			case _:
